@@ -15,25 +15,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/users")
 public class UserController {
+    private long nextUserId;
     private final Map<Long, User> users = new HashMap<>();
 
     @PostMapping
     public User createUser(@RequestBody User newUser) {
-        if (newUser.getEmail() == null || newUser.getEmail().isEmpty() || !newUser.getEmail().contains("@")) {
-            throw new ValidationException("Неверный формат электронной почты");
-        }
-
-        if (newUser.getLogin() == null || newUser.getLogin().isEmpty() || newUser.getLogin().contains(" ")) {
-            throw new ValidationException("Логин не должен быть пустым и содержать пробелы");
-        }
-
-        if (newUser.getName() == null || newUser.getName().isEmpty()) {
-            newUser.setName(newUser.getLogin());
-        }
-
-        if (newUser.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("Ты не мог родиться в будущем...или мог?!?!");
-        }
+        validateUser(newUser);
 
         newUser.setId(getNextUserId());
 
@@ -44,55 +31,47 @@ public class UserController {
 
     @PutMapping
     public User updateUser(@RequestBody User updatedUser) {
-        if (updatedUser.getId() == null) {
+        if (!users.containsKey(updatedUser.getId()) && updatedUser.getId() == null) {
             throw new ConditionsNotMetException("Id должен быть указан");
         }
         User existingUser = users.get(updatedUser.getId());
-
-        if (existingUser != null) {
-            if (updatedUser.getEmail() == null || updatedUser.getEmail().isEmpty() ||
-                    !updatedUser.getEmail().contains("@")) {
-                throw new ValidationException("Неверный формат электронной почты");
-            } else {
-                existingUser.setEmail(updatedUser.getEmail());
-            }
-
-            if (updatedUser.getLogin() == null || updatedUser.getLogin().isEmpty() ||
-                    updatedUser.getLogin().contains(" ")) {
-                throw new ValidationException("Логин не должен быть пустым и содержать пробелы");
-            } else {
-                existingUser.setLogin(updatedUser.getLogin());
-            }
-
-            if (updatedUser.getName() == null || updatedUser.getName().isEmpty()) {
-                updatedUser.setName(updatedUser.getLogin());
-            } else {
-                existingUser.setName(updatedUser.getName());
-            }
-
-            if (updatedUser.getBirthday().isAfter(LocalDate.now())) {
-                throw new ValidationException("Ты не мог родиться в будущем...или мог?!?!");
-            } else {
-                existingUser.setBirthday(updatedUser.getBirthday());
-            }
-
-            log.info("Пользователь обновлен: {}", updatedUser);
-            return updatedUser;
+        if (existingUser == null) {
+            throw new ConditionsNotMetException("Пользователь с id = " + updatedUser.getId() + " не найден");
         }
-        throw new ConditionsNotMetException("Пользователь с id = " + updatedUser.getId() + " не найден");
+
+        validateUser(updatedUser);
+
+        existingUser.setEmail(updatedUser.getEmail());
+        existingUser.setLogin(updatedUser.getLogin());
+        existingUser.setName(updatedUser.getName());
+        existingUser.setBirthday(updatedUser.getBirthday());
+
+        log.info("Пользователь обновлен: {}", updatedUser);
+        return updatedUser;
     }
 
     @GetMapping
     public Collection<User> getAllUsers() {
+        log.info("Количество пользователей {}", users.size());
         return users.values();
     }
 
+    private void validateUser(User user) {
+        if (user.getEmail() == null || user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
+            throw new ValidationException("Неверный формат электронной почты");
+        }
+        if (user.getLogin() == null || user.getLogin().isEmpty() || user.getLogin().contains(" ")) {
+            throw new ValidationException("Логин не должен быть пустым и содержать пробелы");
+        }
+        if (user.getName() == null || user.getName().isEmpty()) {
+            user.setName(user.getLogin());
+        }
+        if (user.getBirthday().isAfter(LocalDate.now())) {
+            throw new ValidationException("Ты не мог родиться в будущем...или мог?!?!");
+        }
+    }
+
     private long getNextUserId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+        return ++nextUserId;
     }
 }
