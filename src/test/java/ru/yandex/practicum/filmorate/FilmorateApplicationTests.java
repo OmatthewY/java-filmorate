@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class FilmorateApplicationTests {
 
 	@Test
-	void testNameValidation() {
+	void filmNameValidationShouldThrowValidationException() {
 		Film film = new Film();
 		film.setName("");
 		film.setDescription("Some description");
@@ -28,7 +28,7 @@ class FilmorateApplicationTests {
 	}
 
 	@Test
-	void testDescriptionValidation() {
+	void filmDescriptionValidationShouldThrowValidationException() {
 		Film film = new Film();
 		film.setName("Some Film");
 		film.setDescription("Это оооооооооооооооооооооооооооооооооооооооооооооооооооооооооооооооооооооооооооооооооооо" +
@@ -44,7 +44,7 @@ class FilmorateApplicationTests {
 	}
 
 	@Test
-	void testReleaseDateValidation() {
+	void filmReleaseDateValidationShouldThrowValidationException() {
 		Film film = new Film();
 		film.setName("Some Film");
 		film.setDescription("Some description");
@@ -58,7 +58,7 @@ class FilmorateApplicationTests {
 	}
 
 	@Test
-	void testDurationValidation() {
+	void filmDurationValidationShouldThrowValidationException() {
 		Film film = new Film();
 		film.setName("Some Film");
 		film.setDescription("Some description");
@@ -72,7 +72,7 @@ class FilmorateApplicationTests {
 	}
 
 	@Test
-	void testInvalidEmailValidation() {
+	void userInvalidEmailValidationShouldThrowValidationException() {
 		User user = new User();
 		user.setEmail("invalid_email");
 		user.setLogin("someLogin");
@@ -85,7 +85,7 @@ class FilmorateApplicationTests {
 	}
 
 	@Test
-	void testEmptyEmailValidation() {
+	void userEmptyEmailValidationShouldThrowValidationException() {
 		User user = new User();
 		user.setEmail("");
 		user.setLogin("someLogin");
@@ -98,7 +98,7 @@ class FilmorateApplicationTests {
 	}
 
 	@Test
-	void testLoginValidation() {
+	void userLoginValidationShouldThrowValidationException() {
 		User user = new User();
 		user.setEmail("valid@example.com");
 		user.setLogin("");
@@ -110,7 +110,7 @@ class FilmorateApplicationTests {
 	}
 
 	@Test
-	void testBirthdayValidation() {
+	void userBirthdayValidationShouldThrowValidationException() {
 		User user = new User();
 		user.setEmail("valid@example.com");
 		user.setLogin("someLogin");

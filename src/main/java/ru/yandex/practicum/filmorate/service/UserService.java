@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,5 +116,32 @@ public class UserService {
         }
         log.info("Список общих друзей у пользователя " + user1Id + " и " + user2Id + " - " + commonFriends);
         return commonFriends;
+    }
+
+    public void validateUser(User user) throws ValidationException {
+        if (user == null) {
+            log.info("Пустые поля пользователя");
+            throw new ValidationException("Пустые поля пользователя");
+        }
+
+        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
+            log.info("У пользователя неккоретная почта");
+            throw new ValidationException("Неверный формат электронной почты");
+        }
+
+        if (user.getLogin() == null || user.getLogin().isEmpty() || user.getLogin().contains(" ")) {
+            log.info("У пользователя неккоретный логин");
+            throw new ValidationException("Логин не должен быть пустым и содержать пробелы");
+        }
+
+        if (user.getName() == null || user.getName().isBlank()) {
+            log.info("Пользователь не указал имя, поэтому его имя стало логином");
+            user.setName(user.getLogin());
+        }
+
+        if (user.getBirthday().isAfter(LocalDate.now())) {
+            log.info("Пользователь не мог родиться в будущем...или мог?!?!");
+            throw new ValidationException("У пользователя неккоректная дата рождения");
+        }
     }
 }
