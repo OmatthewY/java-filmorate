@@ -1,80 +1,61 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
 
-@Slf4j
 @RestController
+@Slf4j
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
-    private long nextFilmId;
-    private final Map<Long, Film> films = new HashMap<>();
-    private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+
+    private final FilmService filmService;
 
     @PostMapping
-    public Film addFilm(@RequestBody Film newFilm) {
-        validateFilm(newFilm);
-
-        newFilm.setId(getNextFilmId());
-
-        films.put(newFilm.getId(), newFilm);
-        log.info("Фильм добавлен: {}", newFilm);
-        return newFilm;
+    public Film addFilm(@RequestBody Film film) {
+        filmService.validateFilm(film);
+        return filmService.addFilm(film);
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film updatedFilm) {
-        if (!films.containsKey(updatedFilm.getId()) && updatedFilm.getId() == null) {
-            throw new ConditionsNotMetException("Id должен быть указан");
-        }
-        Film existingFilm = films.get(updatedFilm.getId());
-        if (existingFilm == null) {
-            throw new ConditionsNotMetException("Фильм с id = " + updatedFilm.getId() + " не найден");
-        }
-
-        validateFilm(updatedFilm);
-
-        existingFilm.setName(updatedFilm.getName());
-        existingFilm.setDescription(updatedFilm.getDescription());
-        existingFilm.setReleaseDate(updatedFilm.getReleaseDate());
-        existingFilm.setDuration(updatedFilm.getDuration());
-
-        log.info("Фильм обновлен: {}", updatedFilm);
-        return updatedFilm;
+    public Film updateFilm(@RequestBody Film film) {
+        filmService.validateFilm(film);
+        return filmService.updateFilm(film);
     }
 
     @GetMapping
-    public Collection<Film> getAllFilms() {
-        log.info("Количество добавленных фильмов {}", films.size());
-        return films.values();
+    public List<Film> getAllFilms() {
+        return filmService.getAllFilms();
     }
 
-    private long getNextFilmId() {
-        return ++nextFilmId;
+    @DeleteMapping
+    public void deleteFilm(Film film) {
+        filmService.deleteFilm(film);
     }
 
-    private void validateFilm(Film film) {
-        if (film.getName() == null || film.getName().isEmpty()) {
-            throw new ValidationException("Название фильма не может быть пустым");
-        }
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
+        filmService.addLike(id, userId);
+    }
 
-        if (film.getDescription().length() > 200) {
-            throw new ValidationException("Максимальная длина описания — 200 символов");
-        }
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable Long id, @PathVariable Long userId) {
+        filmService.deleteLike(userId, id);
+    }
 
-        if (film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
-            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10",
+            required = false) Integer count) {
+        if (count <= 0) {
+            throw new IncorrectParameterException("Параметр count должен быть больше 0");
         }
-
-        if (film.getDuration() <= 0) {
-            throw new ValidationException("Продолжительность фильма не может быть отрицательной");
-        }
+        return filmService.getPopularFilms(count);
     }
 }
