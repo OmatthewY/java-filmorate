@@ -47,9 +47,15 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void deleteUser(User user) {
-        log.info("Пользователь под идентификатором - " + user.getId() + " удален");
-        users.remove(user.getId());
+    public void deleteAllUsers() {
+        log.info("Удалены все пользователи");
+        users.clear();
+    }
+
+    @Override
+    public void deleteUserById(Long id) {
+        log.info("Пользователь под идентификатором - " + id + " удален");
+        users.remove(users.get(id));
     }
 
     private long getNextUserId() {

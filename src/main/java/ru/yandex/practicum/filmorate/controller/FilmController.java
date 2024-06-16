@@ -35,14 +35,29 @@ public class FilmController {
         return filmService.getAllFilms();
     }
 
+    @GetMapping("{id}")
+    public Film getFilmById(@PathVariable Long id) {
+        return filmService.getFilmById(id);
+    }
+
     @DeleteMapping
-    public void deleteFilm(Film film) {
-        filmService.deleteFilm(film);
+    public void deleteAllFilms() {
+        filmService.deleteAllFilms();
+    }
+
+    @DeleteMapping("{id}")
+    public void deleteFilmById(@PathVariable Long id) {
+        filmService.deleteFilmById(id);
     }
 
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable Long id, @PathVariable Long userId) {
         filmService.addLike(id, userId);
+    }
+
+    @GetMapping("/{id}/like")
+    public Long getLikes(@PathVariable Long filmId) {
+        return filmService.getLikes(filmId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
