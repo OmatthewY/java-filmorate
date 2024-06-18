@@ -26,8 +26,8 @@ public class FilmsUsersDbStorageImpl implements FilmsUsersStorage  {
             String sql = "select user_id from films_users where film_id = ?";
             return (long) jdbcTemplate.query(sql, this::mapRow, filmId).size();
         } catch (Exception e) {
-            log.error("Ошибка в получении лайков у фильма");
-            throw new ConditionsNotMetException("Ошибка в получении лайков у фильма");
+            log.error("Ошибка в получении лайков у фильма: " + e.getMessage(), e);
+            throw new ConditionsNotMetException("Ошибка в получении лайков у фильма: ");
         }
     }
 
@@ -41,8 +41,8 @@ public class FilmsUsersDbStorageImpl implements FilmsUsersStorage  {
             insert.execute(new MapSqlParameterSource("film_id", filmId)
                     .addValue("user_id", userId));
         } catch (Exception e) {
-            log.error("Ошибка в добавлении лайка к фильму");
-            throw new ConditionsNotMetException("Ошибка в добавлении лайка к фильму");
+            log.error("Ошибка в добавлении лайка к фильму: " + e.getMessage(), e);
+            throw new ConditionsNotMetException("Ошибка в добавлении лайка к фильму: ");
         }
     }
 
@@ -52,8 +52,8 @@ public class FilmsUsersDbStorageImpl implements FilmsUsersStorage  {
             String sql = "delete from films_users where film_id = ? and user_id = ?";
             jdbcTemplate.update(sql, filmId, userId);
         } catch (Exception e) {
-            log.error("Ошибка в удалении лайка к фильму");
-            throw new ConditionsNotMetException("Ошибка в удалении лайка к фильму");
+            log.error("Ошибка в удалении лайка к фильму: " + e.getMessage(), e);
+            throw new ConditionsNotMetException("Ошибка в удалении лайка к фильму: ");
         }
     }
 

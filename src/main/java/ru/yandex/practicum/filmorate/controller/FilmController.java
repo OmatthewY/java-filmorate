@@ -1,53 +1,55 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.validator.Update;
 
 import java.util.List;
 
 @RestController
 @Slf4j
 @RequestMapping("/films")
+@Validated
 @RequiredArgsConstructor
 public class FilmController {
 
     private final FilmService filmService;
 
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
-        filmService.validateFilm(film);
-        return filmService.addFilm(film);
+    public Film create(@Valid @RequestBody Film film) {
+        return filmService.create(film);
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film film) {
-        filmService.validateFilm(film);
-        return filmService.updateFilm(film);
+    public Film update(@Validated(Update.class) @RequestBody Film film) {
+        return filmService.update(film);
     }
 
     @GetMapping
-    public List<Film> getAllFilms() {
-        return filmService.getAllFilms();
+    public List<Film> getAll() {
+        return filmService.getAll();
     }
 
     @GetMapping("{id}")
-    public Film getFilmById(@PathVariable Long id) {
-        return filmService.getFilmById(id);
+    public Film getById(@PathVariable Long id) {
+        return filmService.getById(id);
     }
 
     @DeleteMapping
-    public void deleteAllFilms() {
-        filmService.deleteAllFilms();
+    public void deleteAll() {
+        filmService.deleteAll();
     }
 
     @DeleteMapping("{id}")
-    public void deleteFilmById(@PathVariable Long id) {
-        filmService.deleteFilmById(id);
+    public void deleteById(@PathVariable Long id) {
+        filmService.deleteById(id);
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -67,10 +69,7 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10",
-            required = false) Integer count) {
-        if (count <= 0) {
-            throw new IncorrectParameterException("Параметр count должен быть больше 0");
-        }
+            required = false) @Positive(message = "Параметр count должен быть больше 0") Integer count) {
         return filmService.getPopularFilms(count);
     }
 }

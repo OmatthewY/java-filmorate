@@ -25,8 +25,8 @@ public class MpaDbStorageImpl implements MpaStorage {
             String sql = "select id, mpa_name from mpa order by id";
             return jdbcTemplate.query(sql, this::mapRow);
         } catch (Exception e) {
-            log.error("Ошибка в получении списка mpa из БД");
-            throw new ConditionsNotMetException("Ошибка в получении списка mpa из БД");
+            log.error("Ошибка в получении списка mpa из БД: " + e.getMessage(), e);
+            throw new ConditionsNotMetException("Ошибка в получении списка mpa из БД: ");
         }
     }
 
@@ -36,8 +36,8 @@ public class MpaDbStorageImpl implements MpaStorage {
             String sql = "select id, mpa_name from mpa where id = ? order by id";
             return jdbcTemplate.queryForObject(sql, this::mapRow, id);
         } catch (Exception e) {
-            log.error("Ошибка в получении mpa по идентификатору из БД");
-            throw new ConditionsNotMetException("Ошибка в получении mpa по идентификатору из БД");
+            log.error("Ошибка в получении mpa по идентификатору из БД: " + e.getMessage(), e);
+            throw new ConditionsNotMetException("Ошибка в получении mpa по идентификатору из БД: ");
         }
     }
 

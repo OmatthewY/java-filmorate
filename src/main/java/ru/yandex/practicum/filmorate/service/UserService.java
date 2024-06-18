@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -22,81 +21,83 @@ public class UserService {
     private final FriendshipStorage friendshipStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorageImpl") UserStorage userStorage, FriendshipStorage friendshipStorage) {
+    public UserService(UserStorage userStorage, FriendshipStorage friendshipStorage) {
         this.userStorage = userStorage;
         this.friendshipStorage = friendshipStorage;
     }
 
-    public User createUser(User user) {
+    public User create(User user) {
         if (user == null) {
-            log.info("Пользователь " + user.getId() + " не найден");
+            log.info("Пользователь не найден. Id Пользователя = {}", user.getId());
             throw new ConditionsNotMetException("Пользователь не найден");
         }
-        return userStorage.createUser(user);
+        return userStorage.create(user);
     }
 
-    public User updateUser(User user) {
-        if (getUserById(user.getId()) == null) {
-            log.info("Пользователь " + user.getId() + " не найден");
+    public User update(User user) {
+        if (getById(user.getId()) == null) {
+            log.info("Не удалось обновить пользователя по указанному Id. Указанный Id = {}", user.getId());
             throw new ConditionsNotMetException("Пользователь не найден");
         } else {
-            return userStorage.updateUser(user);
+            return userStorage.update(user);
         }
     }
 
-    public void deleteAllUsers() {
-        userStorage.deleteAllUsers();
+    public void deleteAll() {
+        userStorage.deleteAll();
     }
 
-    public void deleteUserById(Long id) {
-        if (getUserById(id) == null) {
-            log.info("Пользователь " + id + " не найден");
+    public void deleteById(Long id) {
+        if (getById(id) == null) {
+            log.info("Не удалось удалить пользователя по указанному Id. Указанный Id = {}", id);
             throw new ConditionsNotMetException("Пользователь не найден");
         }
-        userStorage.deleteUserById(id);
+        userStorage.deleteById(id);
     }
 
-    public List<User> getAllUsers() {
-        return userStorage.getAllUsers();
+    public List<User> getAll() {
+        return userStorage.getAll();
     }
 
-    public User getUserById(Long id) {
-        return userStorage.getUserById(id);
+    public User getById(Long id) {
+        return userStorage.getById(id);
     }
 
     public void addFriend(Long userId, Long friendId) {
 
-        if (getUserById(userId) == null) {
-            log.info("Пользователь под идентификатором - " + userId + " не найден");
+        if (getById(userId) == null) {
+            log.info("Не удалось найти пользователя (при добавлении друга) по Id. Id Пользователя = {}", userId);
             throw new ConditionsNotMetException("Пользователь не найден");
         }
-        if (getUserById(friendId) == null) {
-            log.info("Пользователь под идентификатором - " + friendId + " не найден");
+        if (getById(friendId) == null) {
+            log.info("Не удалось найти друга пользователя (при добавлении друга) по Id. Id Друга пользователя = {}",
+                    friendId);
             throw new ConditionsNotMetException("Пользователь не найден");
         }
 
-        friendshipStorage.addUserToFriends(userId, friendId);
+        friendshipStorage.addToFriends(userId, friendId);
         log.info("Добавили друга " + friendId + " пользователю " + userId);
     }
 
     public void deleteFriend(Long userId, Long friendId) {
 
-        if (getUserById(userId) == null) {
-            log.info("Пользователь под идентификатором - " + userId + " не найден");
+        if (getById(userId) == null) {
+            log.info("Не удалось найти пользователя (при удалении друга) по Id. Id Пользователя = {}", userId);
             throw new ConditionsNotMetException("Пользователь не найден");
         }
-        if (getUserById(friendId) == null) {
-            log.info("Пользователь под идентификатором - " + friendId + " не найден");
+        if (getById(friendId) == null) {
+            log.info("Не удалось найти друга пользователя (при удалении друга) по Id. Id Друга пользователя = {}",
+                    friendId);
             throw new ConditionsNotMetException("Пользователь не найден");
         }
 
-        friendshipStorage.deleteUserFromFriends(userId, friendId);
+        friendshipStorage.deleteFromFriends(userId, friendId);
         log.info("Удалили друга " + friendId + " у пользователя " + userId);
     }
 
     public List<User> getFriends(Long userId) {
-        if (getUserById(userId) == null) {
-            log.info("Пользователь " + userId + " не найден");
+        if (getById(userId) == null) {
+            log.info("Не удалось найти пользователя (при поиске друзей) по Id. Id Пользователя = {}", userId);
             throw new ConditionsNotMetException("Пользователь отсуствует в БД");
         } else {
             return friendshipStorage.getFriends(userId);
@@ -104,45 +105,8 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(Long user1Id, Long user2Id) {
-        List<User> user1List = friendshipStorage.getFriends(user1Id);
-        List<User> user2List = friendshipStorage.getFriends(user2Id);
-
-        List<User> commonFriends = new ArrayList<>();
-
-        for (User userInList : getAllUsers()) {
-            if (user1List.contains(userInList)
-                    && user2List.contains(userInList)) {
-                commonFriends.add(userInList);
-            }
-        }
+        List<User> commonFriends = friendshipStorage.getCommonFriends(user1Id, user2Id);
         log.info("Список общих друзей у пользователя " + user1Id + " и " + user2Id + " - " + commonFriends);
         return commonFriends;
-    }
-
-    public void validateUser(User user) throws ValidationException {
-        if (user == null) {
-            log.info("Пустые поля пользователя");
-            throw new ValidationException("Пустые поля пользователя");
-        }
-
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.info("У пользователя неккоретная почта");
-            throw new ValidationException("Неверный формат электронной почты");
-        }
-
-        if (user.getLogin() == null || user.getLogin().isEmpty() || user.getLogin().contains(" ")) {
-            log.info("У пользователя неккоретный логин");
-            throw new ValidationException("Логин не должен быть пустым и содержать пробелы");
-        }
-
-        if (user.getName() == null || user.getName().isBlank()) {
-            log.info("Пользователь не указал имя, поэтому его имя стало логином");
-            user.setName(user.getLogin());
-        }
-
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.info("Пользователь не мог родиться в будущем...или мог?!?!");
-            throw new ValidationException("У пользователя неккоректная дата рождения");
-        }
     }
 }

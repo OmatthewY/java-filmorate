@@ -29,7 +29,7 @@ public class FilmDbStorageImpl implements FilmStorage {
     }
 
     @Override
-    public Film addFilm(Film film) {
+    public Film create(Film film) {
         try {
             SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate)
                     .withSchemaName("public")
@@ -54,14 +54,14 @@ public class FilmDbStorageImpl implements FilmStorage {
                 }
             }
         } catch (Exception e) {
-            log.error("Ошибка в добавлении фильма в БД");
-            throw new IncorrectParameterException("Ошибка в добавлении фильма в БД");
+            log.error("Ошибка в добавлении фильма в БД: " + e.getMessage(), e);
+            throw new IncorrectParameterException("Ошибка в добавлении фильма в БД: ");
         }
         return film;
     }
 
     @Override
-    public Film updateFilm(Film film) {
+    public Film update(Film film) {
         try {
             String sql = "update films set name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? " +
                     "where id = ?";
@@ -89,14 +89,14 @@ public class FilmDbStorageImpl implements FilmStorage {
                 }
             }
         } catch (Exception e) {
-            log.error("Ошибка в обновлении фильма в БД");
-            throw new IncorrectParameterException("Ошибка в обновлении фильма в БД");
+            log.error("Ошибка в обновлении фильма в БД: " + e.getMessage(), e);
+            throw new IncorrectParameterException("Ошибка в обновлении фильма в БД: ");
         }
         return film;
     }
 
     @Override
-    public List<Film> getAllFilms() {
+    public List<Film> getAll() {
         try {
             String sql = "select f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id, mpa.mpa_name as mpa_name, " +
                     "string_agg(g.id, ', ') as g_ids, string_agg(g.genre_name, ', ') as g_names from films f " +
@@ -108,13 +108,13 @@ public class FilmDbStorageImpl implements FilmStorage {
 
             return jdbcTemplate.query(sql, this::mapRow);
         } catch (Exception e) {
-            log.error("Ошибка в получении всех фильмов из БД");
-            throw new ConditionsNotMetException("Ошибка в получении всех фильмов из БД");
+            log.error("Ошибка в получении всех фильмов из БД: " + e.getMessage(), e);
+            throw new ConditionsNotMetException("Ошибка в получении всех фильмов из БД: ");
         }
     }
 
     @Override
-    public Film getFilmById(Long id) {
+    public Film getById(Long id) {
         try {
             String sql = "select f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id, mpa.mpa_name as mpa_name, " +
                     "string_agg(g.id, ', ') as g_ids, string_agg(g.genre_name, ', ') as g_names from films f " +
@@ -127,38 +127,51 @@ public class FilmDbStorageImpl implements FilmStorage {
 
             return jdbcTemplate.queryForObject(sql, this::mapRow, id);
         } catch (Exception e) {
-            log.error("Ошибка в получении фильма по идентификатору из БД");
-            throw new ConditionsNotMetException("Неверный идентификатор фильма");
+            log.error("Ошибка в получении фильма по идентификатору из БД: " + e.getMessage(), e);
+            throw new ConditionsNotMetException("Неверный идентификатор фильма: ");
         }
     }
 
     @Override
-    public void deleteAllFilms() {
+    public void deleteAll() {
         try {
             String sql = "delete from films";
             jdbcTemplate.update(sql);
-            String sql2 = "delete from film_genre";
-            jdbcTemplate.update(sql2);
-            String sql4 = "delete from films_users";
-            jdbcTemplate.update(sql4);
         } catch (Exception e) {
-            log.error("Ошибка в удалении фильма");
-            throw new ConditionsNotMetException("Ошибка в удалении фильма");
+            log.error("Ошибка в удалении фильма: " + e.getMessage(), e);
+            throw new ConditionsNotMetException("Ошибка в удалении фильма: ");
         }
     }
 
     @Override
-    public void deleteFilmById(Long id) {
+    public void deleteById(Long id) {
         try {
             String sql = "delete from films where id = ?";
             jdbcTemplate.update(sql, id);
-            String sql2 = "delete from film_genre where film_id = ?";
-            jdbcTemplate.update(sql2, id);
-            String sql4 = "delete from films_users where film_id = ?";
-            jdbcTemplate.update(sql4, id);
         } catch (Exception e) {
-            log.error("Ошибка в удалении фильма по идентификатору");
-            throw new ConditionsNotMetException("Ошибка в удалении фильма по идентификатору");
+            log.error("Ошибка в удалении фильма по идентификатору: " + e.getMessage(), e);
+            throw new ConditionsNotMetException("Ошибка в удалении фильма по идентификатору: ");
+        }
+    }
+
+    public List<Film> getPopularFilms(Integer size) {
+        try {
+            String sql = "select f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id, mpa.mpa_name as mpa_name, " +
+                    "string_agg(g.id, ', ') as g_ids, string_agg(g.genre_name, ', ') as g_names, " +
+                    "count(fl.user_id) as likes_count " +
+                    "from films f " +
+                    "left join film_genre fg on f.id = fg.film_id " +
+                    "left join genre g on fg.genre_id = g.id " +
+                    "left join mpa on f.mpa_id = mpa.id " +
+                    "left join films_users fl on f.id = fl.film_id " +
+                    "group by f.id, mpa.mpa_name " +
+                    "order by likes_count desc " +
+                    "limit ?";
+
+            return jdbcTemplate.query(sql, this::mapRow, size);
+        } catch (Exception e) {
+            log.error("Ошибка в получении популярных фильмов из БД: " + e.getMessage(), e);
+            throw new ConditionsNotMetException("Ошибка в получении популярных фильмов из БД: ");
         }
     }
 

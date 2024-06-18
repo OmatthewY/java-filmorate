@@ -10,19 +10,10 @@ import ru.yandex.practicum.filmorate.model.ErrorResponse;
 @RestControllerAdvice
 @Slf4j
 public class ErrorHandler {
-    @ExceptionHandler
+    @ExceptionHandler({ValidationException.class, IncorrectParameterException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(final ValidationException e) {
+    public ErrorResponse handleMethodArgumentNotValidException(final Exception e) {
         log.error("Произошло исключение валидации при проверке: {}", e.getMessage());
-        return new ErrorResponse(
-                e.getMessage()
-        );
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleIncorrectParameterException(final IncorrectParameterException e) {
-        log.error("Произошло исключение с неправильным параметром: {}", e.getMessage());
         return new ErrorResponse(
                 e.getMessage()
         );

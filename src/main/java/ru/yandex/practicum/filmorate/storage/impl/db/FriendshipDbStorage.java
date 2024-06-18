@@ -22,7 +22,7 @@ public class FriendshipDbStorage implements FriendshipStorage  {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void addUserToFriends(Long userId, Long friendId) {
+    public void addToFriends(Long userId, Long friendId) {
         try {
             SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate)
                     .withTableName("friendship")
@@ -31,19 +31,19 @@ public class FriendshipDbStorage implements FriendshipStorage  {
             insert.execute(new MapSqlParameterSource("user_id", userId)
                     .addValue("friend_id", friendId));
         } catch (Exception e) {
-            log.error("Ошибка в добавлении друга к пользователю");
-            throw new ConditionsNotMetException(("Ошибка в добавлении друга к пользователю"));
+            log.error("Ошибка в добавлении друга к пользователю: " + e.getMessage(), e);
+            throw new ConditionsNotMetException(("Ошибка в добавлении друга к пользователю: "));
         }
     }
 
     @Override
-    public void deleteUserFromFriends(Long userId, Long friendId) {
+    public void deleteFromFriends(Long userId, Long friendId) {
         try {
             String sql = "delete from friendship where user_id = ? and friend_id = ?";
             jdbcTemplate.update(sql, userId, friendId);
         } catch (Exception e) {
-            log.error("Ошибка в удалении друга у пользователя");
-            throw new ConditionsNotMetException("Ошибка в удалении друга у пользователя");
+            log.error("Ошибка в удалении друга у пользователя: " + e.getMessage(), e);
+            throw new ConditionsNotMetException("Ошибка в удалении друга у пользователя: ");
         }
     }
 
@@ -53,8 +53,21 @@ public class FriendshipDbStorage implements FriendshipStorage  {
             String sql = "select u.* from users u join friendship fr on u.id = fr.friend_id where fr.user_id = ?";
             return jdbcTemplate.query(sql, this::mapRow, userId);
         } catch (Exception e) {
-            log.error("Ошибка в получении списка друзей пользователя");
-            throw new ConditionsNotMetException("Ошибка в получении списка друзей пользователя");
+            log.error("Ошибка в получении списка друзей пользователя: " + e.getMessage(), e);
+            throw new ConditionsNotMetException("Ошибка в получении списка друзей пользователя: ");
+        }
+    }
+
+    @Override
+    public List<User> getCommonFriends(Long user1Id, Long user2Id) {
+        try {
+            String sql = "select u.* from users u " +
+                    "join friendship f1 on u.id = f1.friend_id and f1.user_id = ? " +
+                    "join friendship f2 on u.id = f2.friend_id and f2.user_id = ?";
+            return jdbcTemplate.query(sql, this::mapRow, user1Id, user2Id);
+        } catch (Exception e) {
+            log.error("Ошибка в получении списка общих друзей: " + e.getMessage(), e);
+            throw new ConditionsNotMetException("Ошибка в получении списка общих друзей: ");
         }
     }
 
