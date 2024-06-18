@@ -12,8 +12,8 @@ import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -63,11 +63,11 @@ public class GenreDbStorageImpl implements GenreStorage {
 
                 films.stream()
                         .filter(film -> film.getId().equals(filmId))
-                        .findFirst()
-                        .ifPresent(film -> {
-                            Set<Genre> genres = film.getGenres();
-                            genres.add(genre);
-                            film.setGenres(genres);
+                        .forEach(film -> {
+                            if (film.getGenres() == null) {
+                                film.setGenres(new HashSet<>());
+                            }
+                            film.getGenres().add(genre);
                         });
             });
         } catch (Exception e) {
