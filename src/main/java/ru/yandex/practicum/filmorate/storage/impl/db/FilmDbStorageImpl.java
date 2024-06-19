@@ -98,12 +98,9 @@ public class FilmDbStorageImpl implements FilmStorage {
     @Override
     public List<Film> getAll() {
         try {
-            String sql = "select f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id, mpa.mpa_name as mpa_name, " +
-                    "string_agg(g.id, ', ') as g_ids, string_agg(g.genre_name, ', ') as g_names from films f " +
-                    "left join film_genre fg on f.id = fg.film_id " +
-                    "left join genre g on fg.genre_id = g.id " +
+            String sql = "select f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id, mpa.mpa_name as mpa_name " +
+                    "from films f " +
                     "left join mpa on f.mpa_id = mpa.id " +
-                    "group by f.id " +
                     "order by f.id";
 
             return jdbcTemplate.query(sql, this::mapRow);
@@ -116,13 +113,10 @@ public class FilmDbStorageImpl implements FilmStorage {
     @Override
     public Film getById(Long id) {
         try {
-            String sql = "select f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id, mpa.mpa_name as mpa_name, " +
-                    "string_agg(g.id, ', ') as g_ids, string_agg(g.genre_name, ', ') as g_names from films f " +
-                    "left join film_genre fg on f.id = fg.film_id " +
-                    "left join genre g on fg.genre_id = g.id " +
+            String sql = "select f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id, mpa.mpa_name as mpa_name " +
+                    "from films f " +
                     "left join mpa on f.mpa_id = mpa.id " +
                     "where f.id = ? " +
-                    "group by f.id " +
                     "order by f.id";
 
             return jdbcTemplate.queryForObject(sql, this::mapRow, id);
@@ -194,24 +188,6 @@ public class FilmDbStorageImpl implements FilmStorage {
             film.setMpa(null);
         }
 
-        String genreIdString = rs.getString("g_ids");
-        String genreNamesString = rs.getString("g_names");
-
-        if (genreIdString != null && genreNamesString != null
-                && !genreIdString.isEmpty() && !genreNamesString.isEmpty()) {
-            String[] ids = genreIdString.split(", ");
-            String[] names = genreNamesString.split(", ");
-
-            Set<Genre> genres = new HashSet<>();
-            for (int i = ids.length; i >= 0; i--) {
-                if (i < names.length) {
-                    long genreId = Long.parseLong(ids[i]);
-                    String genreName = names[i];
-                    genres.add(new Genre(genreId, genreName));
-                }
-            }
-            film.setGenres(genres);
-        }
         String sql = "select user_id from films_users where film_id = ?";
         int likes = jdbcTemplate.queryForList(sql, film.getId()).size();
         film.setLikesCount(likes);
