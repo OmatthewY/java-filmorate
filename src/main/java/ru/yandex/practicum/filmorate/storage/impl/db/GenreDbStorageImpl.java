@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -48,28 +49,28 @@ public class GenreDbStorageImpl implements GenreStorage {
     @Override
     public void loadGenresForFilm(List<Film> films) {
         try {
-            List<Long> filmIds = films.stream().map(Film::getId).collect(Collectors.toList());
+            final Map<Long, Film> filmById = films.stream()
+                    .collect(Collectors.toMap(Film::getId, film -> film));
 
-            String inSql = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+            String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
 
-            final String sqlQuery = "select fg.film_id, g.id as genre_id, g.genre_name " +
-                    "from film_genre fg " +
-                    "join genre g on fg.genre_id = g.id " +
+            final String sqlQuery = "select g.id as genre_id, g.genre_name, fg.film_id " +
+                    "from genre g " +
+                    "join film_genre fg on fg.genre_id = g.id " +
                     "where fg.film_id in (" + inSql + ")";
 
-            jdbcTemplate.query(sqlQuery, filmIds.toArray(), rs -> {
+            jdbcTemplate.query(sqlQuery, (rs) -> {
                 Long filmId = rs.getLong("film_id");
                 Genre genre = mapRow(rs, 0);
 
-                films.stream()
-                        .filter(film -> film.getId().equals(filmId))
-                        .forEach(film -> {
-                            if (film.getGenres() == null) {
-                                film.setGenres(new HashSet<>());
-                            }
-                            film.getGenres().add(genre);
-                        });
-            });
+                Film film = filmById.get(filmId);
+                if (film != null) {
+                    if (film.getGenres() == null) {
+                        film.setGenres(new HashSet<>());
+                    }
+                    film.getGenres().add(genre);
+                }
+            }, films.stream().map(Film::getId).toArray());
         } catch (Exception e) {
             log.error("Ошибка в загрузке жанров для фильма из БД: " + e.getMessage(), e);
             throw new ConditionsNotMetException("Ошибка в загрузке жанров для фильма из БД: ");
