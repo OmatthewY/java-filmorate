@@ -31,7 +31,7 @@ public class FriendshipDbStorage implements FriendshipStorage  {
             insert.execute(new MapSqlParameterSource("user_id", userId)
                     .addValue("friend_id", friendId));
         } catch (Exception e) {
-            log.error("Ошибка в добавлении друга к пользователю: " + e.getMessage(), e);
+            log.error("Ошибка в добавлении друга к пользователю: {}", e.getMessage(), e);
             throw new ConditionsNotMetException(("Ошибка в добавлении друга к пользователю: "));
         }
     }
@@ -42,7 +42,7 @@ public class FriendshipDbStorage implements FriendshipStorage  {
             String sql = "delete from friendship where user_id = ? and friend_id = ?";
             jdbcTemplate.update(sql, userId, friendId);
         } catch (Exception e) {
-            log.error("Ошибка в удалении друга у пользователя: " + e.getMessage(), e);
+            log.error("Ошибка в удалении друга у пользователя: {}", e.getMessage(), e);
             throw new ConditionsNotMetException("Ошибка в удалении друга у пользователя: ");
         }
     }
@@ -53,7 +53,7 @@ public class FriendshipDbStorage implements FriendshipStorage  {
             String sql = "select u.* from users u join friendship fr on u.id = fr.friend_id where fr.user_id = ?";
             return jdbcTemplate.query(sql, this::mapRow, userId);
         } catch (Exception e) {
-            log.error("Ошибка в получении списка друзей пользователя: " + e.getMessage(), e);
+            log.error("Ошибка в получении списка друзей пользователя: {}", e.getMessage(), e);
             throw new ConditionsNotMetException("Ошибка в получении списка друзей пользователя: ");
         }
     }
@@ -66,7 +66,7 @@ public class FriendshipDbStorage implements FriendshipStorage  {
                     "join friendship f2 on u.id = f2.friend_id and f2.user_id = ?";
             return jdbcTemplate.query(sql, this::mapRow, user1Id, user2Id);
         } catch (Exception e) {
-            log.error("Ошибка в получении списка общих друзей: " + e.getMessage(), e);
+            log.error("Ошибка в получении списка общих друзей: {}", e.getMessage(), e);
             throw new ConditionsNotMetException("Ошибка в получении списка общих друзей: ");
         }
     }

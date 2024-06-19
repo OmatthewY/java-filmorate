@@ -74,7 +74,7 @@ public class FilmService {
         }
 
         filmsUsersStorage.addLike(filmId, userId);
-        log.info("Пользователь " + userId + " добавил лайк фильму " + filmId);
+        log.info("Пользователь {} добавил лайк к фильму {}", userId, filmId);
     }
 
 
@@ -91,7 +91,7 @@ public class FilmService {
         }
 
         filmsUsersStorage.deleteLike(filmId, userId);
-        log.info("Пользователь " + userId + " удалил лайк к фильму " + filmId);
+        log.info("Пользователь {} удалил лайк к фильму {}", userId, filmId);
     }
 
     public Long getLikes(Long filmId) {
@@ -101,10 +101,7 @@ public class FilmService {
     public List<Film> getPopularFilms(Integer size) {
         List<Film> popularFilms = filmStorage.getPopularFilms(size);
 
-        if (popularFilms.isEmpty()) {
-            log.info("Список фильмов пуст");
-            throw new ConditionsNotMetException("Популярные фильмы не найдены");
-        }
+        genreStorage.loadGenresForFilm(popularFilms);
 
         return popularFilms;
     }

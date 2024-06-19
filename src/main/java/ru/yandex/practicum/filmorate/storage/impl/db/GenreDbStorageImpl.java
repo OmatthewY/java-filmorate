@@ -30,7 +30,7 @@ public class GenreDbStorageImpl implements GenreStorage {
             String sql = "select id, genre_name from genre order by id";
             return jdbcTemplate.query(sql, this::mapRow);
         } catch (Exception e) {
-            log.error("Ошибка в получении списка жанров из БД: " + e.getMessage(), e);
+            log.error("Ошибка в получении списка жанров из БД: {}", e.getMessage(), e);
             throw new ConditionsNotMetException("Ошибка в получении списка жанров из БД: ");
         }
     }
@@ -41,7 +41,7 @@ public class GenreDbStorageImpl implements GenreStorage {
             String sql = "select id, genre_name from genre where id = ? order by id";
             return jdbcTemplate.queryForObject(sql, this::mapRow, id);
         } catch (Exception e) {
-            log.error("Ошибка в получении жанра по идентификатору из БД: " + e.getMessage(), e);
+            log.error("Ошибка в получении жанра по идентификатору из БД: {}", e.getMessage(), e);
             throw new ConditionsNotMetException("Ошибка в получении жанра по идентификатору из БД: ");
         }
     }
@@ -64,15 +64,13 @@ public class GenreDbStorageImpl implements GenreStorage {
                 Genre genre = mapRow(rs, 0);
 
                 Film film = filmById.get(filmId);
-                if (film != null) {
-                    if (film.getGenres() == null) {
-                        film.setGenres(new HashSet<>());
-                    }
-                    film.getGenres().add(genre);
+                if (film.getGenres() == null) {
+                    film.setGenres(new HashSet<>());
                 }
+                film.getGenres().add(genre);
             }, films.stream().map(Film::getId).toArray());
         } catch (Exception e) {
-            log.error("Ошибка в загрузке жанров для фильма из БД: " + e.getMessage(), e);
+            log.error("Ошибка в загрузке жанров для фильма из БД: {}", e.getMessage(), e);
             throw new ConditionsNotMetException("Ошибка в загрузке жанров для фильма из БД: ");
         }
     }

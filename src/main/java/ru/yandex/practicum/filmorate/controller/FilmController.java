@@ -28,7 +28,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@Validated(Update.class) @RequestBody Film film) {
+    public Film update(@Valid @Validated(Update.class) @RequestBody Film film) {
         return filmService.update(film);
     }
 
@@ -68,8 +68,8 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10",
-            required = false) @Positive(message = "Параметр count должен быть больше 0") Integer count) {
+    public List<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10")
+                                          @Positive(message = "Параметр count должен быть больше 0") Integer count) {
         return filmService.getPopularFilms(count);
     }
 }

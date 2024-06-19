@@ -73,7 +73,7 @@ public class UserService {
         }
 
         friendshipStorage.addToFriends(userId, friendId);
-        log.info("Добавили друга " + friendId + " пользователю " + userId);
+        log.info("Добавили друга {} пользователю {}", friendId, userId);
     }
 
     public void deleteFriend(Long userId, Long friendId) {
@@ -89,7 +89,7 @@ public class UserService {
         }
 
         friendshipStorage.deleteFromFriends(userId, friendId);
-        log.info("Удалили друга " + friendId + " у пользователя " + userId);
+        log.info("Удалили друга {} у пользователя {}", friendId, userId);
     }
 
     public List<User> getFriends(Long userId) {
@@ -103,7 +103,7 @@ public class UserService {
 
     public List<User> getCommonFriends(Long user1Id, Long user2Id) {
         List<User> commonFriends = friendshipStorage.getCommonFriends(user1Id, user2Id);
-        log.info("Список общих друзей у пользователя " + user1Id + " и " + user2Id + " - " + commonFriends);
+        log.info("Список общих друзей у пользователя " + user1Id + " и " + user2Id + " - {}", commonFriends);
         return commonFriends;
     }
 }

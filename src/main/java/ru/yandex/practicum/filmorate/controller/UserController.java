@@ -27,7 +27,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@Validated(Update.class) @RequestBody User user) {
+    public User update(@Valid @Validated(Update.class) @RequestBody User user) {
         return userService.update(user);
     }
 

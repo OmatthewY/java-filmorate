@@ -40,7 +40,7 @@ public class UserDbStorageImpl implements UserStorage {
 
             return user;
         } catch (Exception e) {
-            log.error("Ошибка в добавлении пользователя в БД: " + e.getMessage(), e);
+            log.error("Ошибка в добавлении пользователя в БД: {}", e.getMessage(), e);
             throw new IncorrectParameterException("Ошибка в добавлении пользователя в БД");
         }
     }
@@ -58,7 +58,7 @@ public class UserDbStorageImpl implements UserStorage {
 
             return user;
         } catch (Exception e) {
-            log.error("Ошибка в обновлении пользователя в БД: " + e.getMessage(), e);
+            log.error("Ошибка в обновлении пользователя в БД: {}", e.getMessage(), e);
             throw new ConditionsNotMetException("Ошибка в обновлении пользователя в БД");
         }
     }
@@ -75,7 +75,7 @@ public class UserDbStorageImpl implements UserStorage {
 
             return jdbcTemplate.query(sql, this::mapRow);
         } catch (Exception e) {
-            log.error("Ошибка в получении всех пользователей из БД: " + e.getMessage(), e);
+            log.error("Ошибка в получении всех пользователей из БД: {}", e.getMessage(), e);
             throw new ConditionsNotMetException("Ошибка в получении всех пользователей из БД");
         }
     }
@@ -93,7 +93,7 @@ public class UserDbStorageImpl implements UserStorage {
 
             return jdbcTemplate.queryForObject(sql, this::mapRow, id);
         } catch (Exception e) {
-            log.error("Ошибка в получении пользователя по идентификатору из БД: " + e.getMessage(), e);
+            log.error("Ошибка в получении пользователя по идентификатору из БД: {}", e.getMessage(), e);
             throw new ConditionsNotMetException("Ошибка в получении пользователя по идентификатору из БД: ");
         }
     }
@@ -104,7 +104,7 @@ public class UserDbStorageImpl implements UserStorage {
             String sql = "delete from users";
             jdbcTemplate.update(sql);
         } catch (Exception e) {
-            log.error("Ошибка при удалении всех пользователей из БД: " + e.getMessage(), e);
+            log.error("Ошибка при удалении всех пользователей из БД: {}", e.getMessage(), e);
             throw new ConditionsNotMetException("Ошибка при удалении всех пользователей из БД: ");
         }
     }
@@ -115,7 +115,7 @@ public class UserDbStorageImpl implements UserStorage {
             String sql = "delete from users where id = ?";
             jdbcTemplate.update(sql, id);
         } catch (Exception e) {
-            log.error("Ошибка при удалении пользователя из БД: " + e.getMessage(), e);
+            log.error("Ошибка при удалении пользователя из БД: {}", e.getMessage(), e);
             throw new ConditionsNotMetException("Ошибка при удалении пользователя из БД: ");
         }
     }
