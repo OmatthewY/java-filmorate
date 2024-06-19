@@ -1,15 +1,19 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.validator.Update;
 
 import java.util.List;
 
 @RestController
+@Validated
 @Slf4j
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -18,25 +22,33 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        userService.validateUser(user);
-        return userService.createUser(user);
+    public User create(@Valid @RequestBody User user) {
+        return userService.create(user);
     }
 
     @PutMapping
-    User updateUser(@RequestBody User user) {
-        userService.validateUser(user);
-        return userService.updateUser(user);
+    public User update(@Valid @Validated(Update.class) @RequestBody User user) {
+        return userService.update(user);
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public List<User> getAll() {
+        return userService.getAll();
+    }
+
+    @GetMapping("{id}")
+    public User getById(@PathVariable Long id) {
+        return userService.getById(id);
     }
 
     @DeleteMapping
-    public void deleteUser(User user) {
-        userService.deleteUser(user);
+    public void deleteAll() {
+        userService.deleteAll();
+    }
+
+    @DeleteMapping("{id}")
+    public void deleteById(@PathVariable Long id) {
+        userService.deleteById(id);
     }
 
     @PutMapping("/{id}/friends/{friendsId}")
